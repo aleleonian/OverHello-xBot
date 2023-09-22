@@ -56,8 +56,7 @@ async function main() {
     await userInput.type("Oh you wished me well, you couldn't tell...");
 
     // this xpath is valid for puppeteer's chrome but in other browsers, it's a different one.
-    // TODO: find a cross-browser way to find that id
-    const nextButton = await page.waitForXPath(' //*[@id="react-root"]/div/div/div/main/div/div/div/div[2]/div[2]/div/div[6]/div');
+    const nextButton = await page.waitForXPath('//span[contains(., "Next")]');
 
     await wait(5000);
 
