@@ -46,13 +46,24 @@ async function main() {
 
     // await userInput.type("Oh you wished me well, you couldn't tell...");
 
-    await wait(10000);
+    // await wait(10000);
 
-    const userInput = await page.$('[name="text"]');
+    const userInput = await page.waitForSelector('[name="text"]');
+    // .then(() => console.log('First URL with image: ' + currentURL));
+
+    // const userInput = await page.$('[name="text"]');
 
     await userInput.type("Oh you wished me well, you couldn't tell...");
 
-    await wait(100000);
+    // this xpath is valid for puppeteer's chrome but in other browsers, it's a different one.
+    // TODO: find a cross-browser way to find that id
+    const nextButton = await page.waitForXPath(' //*[@id="react-root"]/div/div/div/main/div/div/div/div[2]/div[2]/div/div[6]/div');
+
+    await wait(5000);
+
+    nextButton.click();
+
+    await wait(5000);
 
     browser.close();
 
