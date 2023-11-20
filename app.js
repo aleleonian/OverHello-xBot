@@ -16,7 +16,9 @@ async function main() {
 
     let pupConfig = {
         headless: false,
-        defaultViewport: null
+        defaultViewport: null,
+        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        ignoreDefaultArgs: ["--enable-automation"] 
     };
 
     const browser = await puppeteer.launch(pupConfig);
@@ -48,21 +50,82 @@ async function main() {
 
     // await wait(10000);
 
-    const userInput = await page.waitForSelector('[name="text"]');
+    let userInput = await page.waitForSelector('[name="text"]');
     // .then(() => console.log('First URL with image: ' + currentURL));
 
     // const userInput = await page.$('[name="text"]');
 
-    await userInput.type("Oh you wished me well, you couldn't tell...");
+    await userInput.type("lector@latigo.com.ar");
 
     // this xpath is valid for puppeteer's chrome but in other browsers, it's a different one.
     const nextButton = await page.waitForXPath('//span[contains(., "Next")]');
 
-    await wait(5000);
+    // await wait(5000);
 
     nextButton.click();
 
-    await wait(5000);
+    // await wait(5000);
+
+    let passwordInput;
+    try {
+        passwordInput = await page.waitForSelector('[name="password"]');
+
+        await passwordInput.type("Latigazo2023!");
+    }
+    catch (error) {
+        console.log("passwordInput not found!");
+        passwordInput = null;
+    }
+
+    if (!passwordInput) {
+        // if we arrive here, Twitter suspects something and wants us to 
+        // type our username again
+        // Enter your phone number or username
+        // There was unusual login activity on your account. 
+        // To help keep your account safe, please enter your phone number or username to verify it’s you.
+
+        // /html/body/div/div/div/div/main/div/div/div/div[2]/div[2]/div[1]/div/div/div[2]/label/div/div[2]/div/input
+        // #react-root > div > div > div > main > div > div > div > div.css-1dbjc4n.r-6koalj.r-16y2uox > div.css-1dbjc4n.r-16y2uox.r-1jgb5lz.r-13qz1uu > div.css-1dbjc4n.r-1fq43b1.r-16y2uox.r-1wbh5a2.r-1dqxon3 > div > div > div.css-1dbjc4n.r-mk0yit.r-kmv1fd > label > div > div.css-1dbjc4n.r-18u37iz.r-16y2uox.r-1wbh5a2.r-19h5ruw.r-1udh08x.r-xd6kpl.r-1pn2ns4.r-1b3ntt7 > div > input
+        // document.querySelector("#react-root > div > div > div > main > div > div > div > div.css-1dbjc4n.r-6koalj.r-16y2uox > div.css-1dbjc4n.r-16y2uox.r-1jgb5lz.r-13qz1uu > div.css-1dbjc4n.r-1fq43b1.r-16y2uox.r-1wbh5a2.r-1dqxon3 > div > div > div.css-1dbjc4n.r-mk0yit.r-kmv1fd > label > div > div.css-1dbjc4n.r-18u37iz.r-16y2uox.r-1wbh5a2.r-19h5ruw.r-1udh08x.r-xd6kpl.r-1pn2ns4.r-1b3ntt7 > div > input")
+        {/* <input autocapitalize="none" autocomplete="on" autocorrect="off" inputmode="text" name="text" spellcheck="false" type="text" dir="auto" class="r-30o5oe r-1dz5y72 r-13qz1uu r-1niwhzg r-17gur6a r-1yadl64 r-deolkf r-homxoj r-poiln3 r-7cikom r-1ny4l3l r-t60dpp r-fdjqy7" data-testid="ocfEnterTextTextInput" value=""> */ }
+        console.log("we gonna try find the userName selector");
+
+        try {
+            userInput = await page.waitForSelector('[name="text"]');
+
+            await userInput.type("LatigoLector");
+
+            await wait(5000);
+
+            await page.keyboard.press('Enter');
+
+            console.log("I pressed enter!");
+
+        }
+        catch (error) {
+            console.log("We did not find the userName selector!");
+        }
+    }
+
+    try {
+        console.log("we gonna try find the passwordInput");
+
+        passwordInput = await page.waitForSelector('[name="password"]');
+
+        await passwordInput.type("Peroponetedeperfil2023!");
+
+        await wait(5000);
+
+        await page.keyboard.press('Enter');
+
+        console.log("I pressed enter! 2");
+
+    }
+    catch (error) {
+        console.log("passwordInput2 not found!");
+    }
+
+    await wait(500000);
 
     browser.close();
 
