@@ -22,10 +22,10 @@ class XBot {
 
     constructor() {
         this.browser;
-        return this.init();
+        this.page
     }
 
-   async init() {
+    async init() {
         const browser = await puppeteer.launch(pupConfig);
         let responseObject = {};
         if (!browser) {
@@ -41,7 +41,22 @@ class XBot {
             responseObject = {
                 success: true,
             }
+            this.page = await browser.newPage();
+
             return responseObject;
+        }
+    }
+
+    async goto(urlToVisit) {
+        try {
+            await this.page.goto(urlToVisit, {
+                waitUntil: "load",
+            });
+            return true;
+        }
+        catch (error) {
+            console.log("Error! ", error);
+            return false;
         }
     }
 }
