@@ -3,10 +3,11 @@ var router = express.Router();
 const XBot = require("../classes/XBot");
 let myXBot;
 
-let responseObject = {};
 let statusCode = 200;
 
 router.get('/init', async function (req, res, next) {
+  let responseObject = {};
+
   if (!req.app.locals.myXBot) {
     req.app.locals.myXBot = new XBot();
     await req.app.locals.myXBot.init();
@@ -24,6 +25,7 @@ router.get('/init', async function (req, res, next) {
 });
 
 router.get('/close', function (req, res, next) {
+  let responseObject = {};
 
   if (!req.app.locals.myXBot) {
     responseObject.success = false;
@@ -47,8 +49,32 @@ router.get('/close', function (req, res, next) {
     }
   }
 });
+router.get('/geturl', async function (req, res, next) {
+  let responseObject = {};
+
+  if (!req.app.locals.myXBot) {
+    responseObject.success = false;
+    responseObject.message = "Not initiated."
+    res.status(301).json(responseObject);
+  }
+  else {
+    try {
+      const url = req.app.locals.myXBot.getUrl();
+      responseObject.success = true;
+      responseObject.url = url;
+      res.status(200).json(responseObject);
+    }
+    catch (error) {
+      console.log("Error!->", error);
+      responseObject.success = false;
+      responseObject.message = "Could not close bot."
+      res.status(301).json(responseObject);
+    }
+  }
+});
 
 router.get('/goto', async function (req, res, next) {
+  let responseObject = {};
 
   if (req.app.locals.myXBot) {
     if (req.query && req.query.url) {
@@ -86,6 +112,7 @@ router.get('/goto', async function (req, res, next) {
 // }
 
 router.post('/findtype', async function (req, res, next) {
+  let responseObject = {};
 
   if (req.app.locals.myXBot) {
     const data = req.body;
@@ -118,6 +145,7 @@ router.post('/findtype', async function (req, res, next) {
 
 });
 router.post('/findclick', async function (req, res, next) {
+  let responseObject = {};
 
   if (req.app.locals.myXBot) {
     const data = req.body;
@@ -150,6 +178,7 @@ router.post('/findclick', async function (req, res, next) {
 
 });
 router.post('/gettext', async function (req, res, next) {
+  let responseObject = {};
 
   if (req.app.locals.myXBot) {
     const data = req.body;

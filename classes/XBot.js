@@ -106,5 +106,8 @@ class XBot {
             return false;
         }
     }
+    getUrl() {
+        return this.page.url();
+    }
 }
 module.exports = XBot;
