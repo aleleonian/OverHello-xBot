@@ -88,5 +88,23 @@ class XBot {
             return false;
         }
     }
+    async findAndGetText(targetElement) {
+        try {
+            let inputElement = await this.page.waitForSelector(targetElement);
+
+            const text = await this.page.$eval(targetElement, el => el.innerText);
+
+            let responseObject = {}
+            responseObject.success = true;
+            responseObject.text = text;
+
+            return responseObject;
+
+        }
+        catch (error) {
+            console.log("Error! ", error);
+            return false;
+        }
+    }
 }
 module.exports = XBot;

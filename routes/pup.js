@@ -149,6 +149,39 @@ router.post('/findclick', async function (req, res, next) {
   return res.status(statusCode).json(responseObject);
 
 });
+router.post('/gettext', async function (req, res, next) {
+
+  if (req.app.locals.myXBot) {
+    const data = req.body;
+
+    if (data && data.target) {
+      const isSuccess = await req.app.locals.myXBot.findAndGetText(data.target);
+      responseObject.success = isSuccess;
+      if (isSuccess) {
+        responseObject.message = "Found and got text!";
+        responseObject.text = isSuccess.text;
+        statusCode = 200;
+      }
+      else {
+        responseObject.message = "Not found and/or got text!";
+        statusCode = 301;
+      }
+    }
+    else {
+      responseObject.success = false;
+      responseObject.message = "Needed target!"
+      statusCode = 301;
+    }
+  }
+  else {
+    responseObject.success = false;
+    responseObject.message = "Bot not initiated."
+    statusCode = 301;
+  }
+
+  return res.status(statusCode).json(responseObject);
+
+});
 
 
 
