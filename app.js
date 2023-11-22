@@ -1,6 +1,10 @@
-;
-const puppeteer = require("puppeteer");
-const KnownDevices = puppeteer.KnownDevices;
+const puppeteer = require('puppeteer-extra')
+// Add stealth plugin and use defaults 
+const pluginStealth = require('puppeteer-extra-plugin-stealth');
+puppeteer.use(pluginStealth());
+
+const puppeteerClassic = require("puppeteer");
+const KnownDevices = puppeteerClassic.KnownDevices;
 const iPhone = KnownDevices["iPhone X"];
 
 
@@ -18,7 +22,7 @@ async function main() {
         headless: false,
         defaultViewport: null,
         executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-        ignoreDefaultArgs: ["--enable-automation"] 
+        ignoreDefaultArgs: ["--enable-automation"]
     };
 
     const browser = await puppeteer.launch(pupConfig);
@@ -32,7 +36,7 @@ async function main() {
 
     const page = await browser.newPage();
 
-    await page.emulate(iPhone);
+    // await page.emulate(iPhone);
 
     await page.goto(pageToVisit, {
         waitUntil: "load",
@@ -125,7 +129,14 @@ async function main() {
         console.log("passwordInput2 not found!");
     }
 
-    await wait(500000);
+    // <div data-offset-key="1rv1p-0-0" class="public-DraftStyleDefault-block public-DraftStyleDefault-ltr"><span data-offset-key="1rv1p-0-0"><br data-text="true"></span></div>
+    // <br data-text="true"> <- this is what holds the tweet once you write something
+    // <br data-text="true"> <- this is the future tweet placeholder
+        ///html/body/div[1]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/label/div[1]/div/div/div/div/div/div[2]/div/div/div/div/span/br
+
+    // await wait(500000);
+    // TODO: make this app a web server that runs commands in the target browser and returns results
+    
 
     browser.close();
 
