@@ -80,6 +80,78 @@ router.get('/goto', async function (req, res, next) {
 
 });
 
+// {
+//   "target": "[jsname=\"yZiJbe\"]",
+//   "text": "que pasa, que pasa"
+// }
+
+router.post('/findtype', async function (req, res, next) {
+
+  if (req.app.locals.myXBot) {
+    const data = req.body;
+
+    if (data && data.target && data.text) {
+      const isSuccess = await req.app.locals.myXBot.findAndType(data.target, data.text);
+      responseObject.success = isSuccess;
+      if (isSuccess) {
+        responseObject.message = "Found and typed";
+        statusCode = 200;
+      }
+      else {
+        responseObject.message = "Not found and/or typed";
+        statusCode = 301;
+      }
+    }
+    else {
+      responseObject.success = false;
+      responseObject.message = "Needed target and text!"
+      statusCode = 301;
+    }
+  }
+  else {
+    responseObject.success = false;
+    responseObject.message = "Bot not initiated."
+    statusCode = 301;
+  }
+
+  return res.status(statusCode).json(responseObject);
+
+});
+router.post('/findclick', async function (req, res, next) {
+
+  if (req.app.locals.myXBot) {
+    const data = req.body;
+
+    if (data && data.target) {
+      const isSuccess = await req.app.locals.myXBot.findAndClick(data.target);
+      responseObject.success = isSuccess;
+      if (isSuccess) {
+        responseObject.message = "Found and clicked!";
+        statusCode = 200;
+      }
+      else {
+        responseObject.message = "Not found and/or clicked!";
+        statusCode = 301;
+      }
+    }
+    else {
+      responseObject.success = false;
+      responseObject.message = "Needed target!"
+      statusCode = 301;
+    }
+  }
+  else {
+    responseObject.success = false;
+    responseObject.message = "Bot not initiated."
+    statusCode = 301;
+  }
+
+  return res.status(statusCode).json(responseObject);
+
+});
+
+
+
 //   if (!req.app.locals.myXBot) {
 //   req.app.locals.myXBot = new XBot();
 //   await req.app.locals.myXBot.init();

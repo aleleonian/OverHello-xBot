@@ -59,5 +59,34 @@ class XBot {
             return false;
         }
     }
+
+    async findAndType(targetElement, text) {
+        try {
+            let inputElement = await this.page.waitForSelector(targetElement);
+
+            await inputElement.type(text);
+
+            return true;
+
+        }
+        catch (error) {
+            console.log("Error! ", error);
+            return false;
+        }
+    }
+    async findAndClick(targetElement) {
+        try {
+            let inputElement = await this.page.waitForSelector(targetElement);
+
+            await inputElement.click();
+
+            return true;
+
+        }
+        catch (error) {
+            console.log("Error! ", error);
+            return false;
+        }
+    }
 }
 module.exports = XBot;
