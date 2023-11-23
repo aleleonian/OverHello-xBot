@@ -185,7 +185,7 @@ router.post('/gettext', async function (req, res, next) {
 
     if (data && data.target) {
       const isSuccess = await req.app.locals.myXBot.findAndGetText(data.target);
-      responseObject.success = isSuccess;
+      responseObject.success = isSuccess.success;
       if (isSuccess) {
         responseObject.message = "Found and got text!";
         responseObject.text = isSuccess.text;
