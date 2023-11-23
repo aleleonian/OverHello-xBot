@@ -105,7 +105,62 @@ router.get('/goto', async function (req, res, next) {
   return res.status(statusCode).json(responseObject);
 
 });
+router.get('/tweet', async function (req, res, next) {
+  let responseObject = {};
 
+  if (req.app.locals.myXBot) {
+    if (req.query && req.query.text) {
+      const text = req.query.text;
+      const hasTweeted = await req.app.locals.myXBot.tweet(text);
+      responseObject.success = hasTweeted;
+      if (hasTweeted) {
+        responseObject.message = "Bot tweeted!";
+        statusCode = 200;
+      }
+      else {
+        responseObject.message = "Bot did NOT tweet";
+        statusCode = 301;
+      }
+    }
+    else {
+      responseObject.success = false;
+      responseObject.message = "No TEXT?"
+      statusCode = 301;
+    }
+  }
+  else {
+    responseObject.success = false;
+    responseObject.message = "Bot not initiated."
+    statusCode = 301;
+  }
+
+  return res.status(statusCode).json(responseObject);
+
+});
+router.get('/login', async function (req, res, next) {
+  let responseObject = {};
+
+  if (req.app.locals.myXBot) {
+    const hasLoggedIn = await req.app.locals.myXBot.loginToX();
+    responseObject.success = hasLoggedIn;
+    if (hasLoggedIn) {
+      responseObject.message = "Bot logged in!";
+      statusCode = 200;
+    }
+    else {
+      responseObject.message = "Bot did NOT log in";
+      statusCode = 301;
+    }
+  }
+  else {
+    responseObject.success = false;
+    responseObject.message = "Bot not initiated."
+    statusCode = 301;
+  }
+
+  return res.status(statusCode).json(responseObject);
+
+});
 // {
 //   "target": "[jsname=\"yZiJbe\"]",
 //   "text": "que pasa, que pasa"
