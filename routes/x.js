@@ -20,13 +20,12 @@ router.get('/init', async function (req, res, next) {
     responseObject.message = "Already initiated."
   }
   res.status(200).json(responseObject);
-
-
 });
 
+//TODO this is not working
 router.get('/close', function (req, res, next) {
   let responseObject = {};
-
+  console.log("req.app.locals.myXBot->", req.app.locals.myXBot);
   if (!req.app.locals.myXBot) {
     responseObject.success = false;
     responseObject.message = "Not initiated."
@@ -74,6 +73,9 @@ router.get('/geturl', async function (req, res, next) {
 });
 
 router.get('/goto', async function (req, res, next) {
+
+  console.log("req.app.locals.myXBot->", req.app.locals.myXBot);
+
   let responseObject = {};
 
   if (req.app.locals.myXBot) {
