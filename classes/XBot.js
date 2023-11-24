@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer-extra');
 const pluginStealth = require('puppeteer-extra-plugin-stealth');
 // const dataDirPlugin = require("puppeteer-extra-plugin-user-data-dir");
 puppeteer.use(pluginStealth());
+const path = require("path");
 // puppeteer.use(dataDirPlugin('/Users/aleleonian/Library/Application Support/Google/Chrome/Default'));
 
 // const puppeteerClassic = require("puppeteer");
@@ -13,12 +14,21 @@ const exitCodeStrings = [
     "Could not open browser :(!"
 ]
 
+
 let pupConfig = {
-    headless: true,
+    headless: JSON.parse(process.env.XBOT_HEADLESS),
     defaultViewport: null,
-    executablePath: process.env.EXECUTABLE_PATH,
-    ignoreDefaultArgs: ["--enable-automation"]
+    ignoreDefaultArgs: ["--enable-automation"],
+    args: [
+        '--start-maximized',
+        '--no-sandbox',
+        '--disable-setuid-sandbox'
+    ]
 };
+
+if (process.env.EXECUTABLE_PATH) {
+    pupConfig.executablePath = process.env.EXECUTABLE_PATH;
+}
 
 class XBot {
 
@@ -44,7 +54,7 @@ class XBot {
                 success: true,
             }
             this.page = await browser.newPage();
-
+            // this.page.setDefaultTimeout(10000);
             return responseObject;
         }
     }
@@ -57,6 +67,19 @@ class XBot {
         }
         catch (error) {
             console.log("Error! ", error);
+            return false;
+        }
+    }
+    async takePic(filePath) {
+        if (!filePath) {
+            filePath = path.resolve(__dirname, "../public/images/xBotSnap.jpg")
+        }
+        try {
+            await this.page.screenshot({ path: filePath });
+            return true;
+        }
+        catch (error){
+            console.log("takePic() error->", error);
             return false;
         }
     }
@@ -109,38 +132,164 @@ class XBot {
     getUrl() {
         return this.page.url();
     }
+    async getLastTweetUrl() {
+        let hasVisited = await this.goto("https://www.x.com" + "/" + process.env.TWEETER_BOT_USERNAME);
+        if (!hasVisited) return false;
+
+        let foundAndClicked = await this.findAndClick(process.env.TWEETER_LAST_POST_IN_PROFILE);
+        if (!foundAndClicked) return false;
+
+        return this.getUrl();
+    }
+
     async tweet(text) {
-        console.log("process.env.TWEETER_INPUT_FIELD->", process.env.TWEETER_INPUT_FIELD);
         let hasVisited = await this.goto("https://www.x.com");
         if (!hasVisited) return false;
-        let foundAndClicked = await this.findAndClick(process.env.TWEETER_INPUT_FIELD);
+
+        // TODO: if the TWEETER_NEW_TWEET_INPUT is not found it's because Twitter
+        // suspects i'm a bot and wants my email
+        let foundAndClicked = await this.findAndClick(process.env.TWEETER_NEW_TWEET_INPUT);
         if (!foundAndClicked) return false;
-        let foundAndTyped = await this.findAndType(process.env.TWEETER_INPUT_FIELD, text);
+
+        let foundAndTyped = await this.findAndType(process.env.TWEETER_NEW_TWEET_INPUT, text);
         if (!foundAndTyped) return false;
+
         foundAndClicked = await this.findAndClick(process.env.TWEETER_POST_BUTTON);
         return foundAndClicked;
-
     }
+
+    async twitterSuspects() {
+        try {
+            const TwitterSuspects = await this.page.waitForXPath(`//*[contains(text(), '${process.env.SUSPICION_TEXT}')]`, { timeout: 10000 })
+            if (TwitterSuspects) {
+                console.log("Found SUSPICION_TEXT!")
+                return true;
+            }
+            else {
+                console.log("Did NOT find SUSPICION_TEXT!")
+                return false;
+            }
+        }
+        catch (error) {
+            console.log("twitterSuspects() exception! -> Did NOT find SUSPICION_TEXT!")
+            return false;
+        }
+    }
+    async twitterWantsVerification() {
+        try {
+            const TwitterWantsToVerify = await this.page.waitForXPath(`//*[contains(text(), '${process.env.VERIFICATION_TEXT}')]`, { timeout: 10000 })
+            if (TwitterWantsToVerify) {
+                console.log("Alert: found VERIFICATION_TEXT!!");
+                const pageContent = await this.page.content();
+                // console.log(pageContent);
+                let response = {}
+                response.success = true;
+                response.pageContent = pageContent;
+                return response;
+            }
+            else {
+                console.log("Did NOT find SUSPICION_TEXT!");
+                let response = {}
+                response.success = false;
+                return response;
+            }
+        }
+        catch (error) {
+            console.log("twitterSuspects() exception! -> Did NOT find SUSPICION_TEXT!")
+            return false;
+        }
+    }
+    // TODO: i gotta learn how to circumvent the email request when Twitter suspects i'm a bot.
+    // check Log in to X _ X.html in noupload/
+    // TODO: set less time for the timeout for finding elements
+    // try catch each and every interaction attempt
+    // detect wheter i'm being requested my email
+
     async loginToX() {
         let hasVisited = await this.goto("https://www.x.com/login");
-        if (!hasVisited) return false;
-        let foundAndClicked = await this.findAndClick('[name=\"text\"]');
-        if (!foundAndClicked) return false;
+        if (!hasVisited) {
+            console.log("Can't visit https://www.x.com");
+            return false;
+        }
+        console.log("We're at https://www.x.com");
 
-        let foundAndTyped = await this.findAndType("[name=\"text\"]", "OverHelloBot");
-        if (!foundAndTyped) return false;
-        foundAndClicked = await this.findAndClick('#layers > div > div > div > div > div > div > div.css-175oi2r.r-1ny4l3l.r-18u37iz.r-1pi2tsx.r-1777fci.r-1xcajam.r-ipm5af.r-g6jmlv.r-1awozwy > div.css-175oi2r.r-1wbh5a2.r-htvplk.r-1udh08x.r-1867qdf.r-kwpbio.r-rsyp9y.r-1pjcn9w.r-1279nm1 > div > div > div.css-175oi2r.r-1ny4l3l.r-6koalj.r-16y2uox.r-14lw9ot.r-1wbh5a2 > div.css-175oi2r.r-16y2uox.r-1wbh5a2.r-1jgb5lz.r-13qz1uu.r-1ye8kvj > div > div > div > div:nth-child(6) > div > span');
-        if (!foundAndClicked) return false;
-       
-        foundAndClicked = await this.findAndClick('[name="password"]');
-        if (!foundAndClicked) return false;
-        
-        foundAndTyped = await this.findAndType("[name=\"password\"]", "Latigazo2023!");
-        if (!foundAndTyped) return false;
+        let foundAndClicked = await this.findAndClick(process.env.TWEETER_USERNAME_INPUT);
+        if (!foundAndClicked) {
+            console.log("Can't find TWEETER_USERNAME_INPUT");
+            return false;
+        }
+        console.log("Found and clicked TWEETER_USERNAME_INPUT");
+
+        let foundAndTyped = await this.findAndType(process.env.TWEETER_USERNAME_INPUT, process.env.TWEETER_BOT_USERNAME);
+        if (!foundAndTyped) {
+            console.log("Can't find and type TWEETER_USERNAME_INPUT");
+            return false;
+        }
+        console.log("Found and typed TWEETER_USERNAME_INPUT");
+
+        foundAndClicked = await this.findAndClick(process.env.TWEETER_USERNAME_SUBMIT_BUTTON);
+        if (!foundAndClicked) {
+            console.log("Can't find and click TWEETER_USERNAME_SUBMIT_BUTTON");
+            return false;
+        }
+        console.log("Found and clicked TWEETER_USERNAME_SUBMIT_BUTTON");
+
+        foundAndClicked = await this.findAndClick(process.env.TWEETER_PASSWORD_INPUT);
+        if (!foundAndClicked) {
+            console.log("Can't find and click TWEETER_PASSWORD_INPUT");
+            return false;
+        }
+        console.log("Found and clicked TWEETER_USERNAME_INPUT");
+
+        foundAndTyped = await this.findAndType(process.env.TWEETER_PASSWORD_INPUT, process.env.TWEETER_BOT_PASSWORD);
+        if (!foundAndTyped) {
+            console.log("Can't find and type TWEETER_PASSWORD_INPUT");
+            return false;
+        }
+        console.log("Found and typed TWEETER_PASSWORD_INPUT");
 
         await this.page.keyboard.press('Enter');
+
         return true;
-        // #react-root > div > div > div > main > div > div > div > div.css-175oi2r.r-1ny4l3l.r-6koalj.r-16y2uox > div.css-175oi2r.r-16y2uox.r-1jgb5lz.r-13qz1uu.r-1ye8kvj > div > div:nth-child(6) > div > span > span
+    }
+
+    async inputEmail() {
+        let foundAndClicked = await this.findAndClick(process.env.TWEETER_EMAIL_INPUT);
+        if (!foundAndClicked) {
+            console.log("Cant't find TWEETER_EMAIL_INPUT");
+            return false;
+        }
+        console.log("Found TWEETER_EMAIL_INPUT");
+
+        let foundAndTyped = await this.findAndType(process.env.TWEETER_EMAIL_INPUT, process.env.TWEETER_BOT_EMAIL);
+        if (!foundAndTyped) {
+            console.log("Can't find and type TWEETER_EMAIL_INPUT");
+            return false;
+        }
+        console.log("Found and typed TWEETER_EMAIL_INPUT");
+
+        await this.page.keyboard.press('Enter');
+
+        return true;
+    }
+    async inputVerificationCode(code) {
+        let foundAndClicked = await this.findAndClick(process.env.TWEETER_VERIFICATION_CODE_INPUT);
+        if (!foundAndClicked) {
+            console.log("Cant't find TWEETER_VERIFICATION_CODE_INPUT");
+            return false;
+        }
+        console.log("Found TWEETER_VERIFICATION_CODE_INPUT");
+
+        let foundAndTyped = await this.findAndType(process.env.TWEETER_VERIFICATION_CODE_INPUT, code);
+        if (!foundAndTyped) {
+            console.log("Can't find and type TWEETER_VERIFICATION_CODE_INPUT");
+            return false;
+        }
+        console.log("Found and typed TWEETER_VERIFICATION_CODE_INPUT");
+
+        await this.page.keyboard.press('Enter');
+
+        return true;
     }
 }
 module.exports = XBot;
