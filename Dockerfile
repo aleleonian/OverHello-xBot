@@ -4,25 +4,34 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-# ARG NODE_VERSION=21.1.0
-ARG NODE_VERSION=20.10.0
+ARG NODE_VERSION=21.1.0
+# ARG NODE_VERSION=20.10.0
 
 # FROM node:${NODE_VERSION}-alpine
-FROM --platform=linux/amd64 node:slim
+# FROM --platform=linux/amd64 node:${NODE_VERSION}-alpine
+FROM node:${NODE_VERSION}-alpine
 # Use production node environment by default.
 ENV NODE_ENV production
 
 # We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+# ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 # Install Google Chrome Stable and fonts
 # Note: this installs the necessary libs to make the browser work with Puppeteer.
-RUN apt-get update && apt-get install curl gnupg -y \
-  && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-  && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-  && apt-get update \
-  && apt-get install google-chrome-stable -y --no-install-recommends \
-  && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install curl gnupg -y \
+#   && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+#   && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+#   && apt-get update \
+#   && apt-get install google-chrome-stable -y --no-install-recommends \
+#   && rm -rf /var/lib/apt/lists/*
+
+RUN apk add --no-cache \
+    libstdc++ \
+    chromium \
+    harfbuzz \
+    nss \
+    freetype \
+    ttf-freefont
 
 WORKDIR /usr/src/app
 
@@ -36,7 +45,13 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     npm ci --omit=dev
 
 # Run the application as a non-root user.
+
+# RUN chown node:node /usr/src/app
+
 USER node
+
+ENV CHROME_BIN=/usr/bin/chromium-browser \
+    CHROME_PATH=/usr/lib/chromium/
 
 # Copy the rest of the source files into the image.
 COPY . .
