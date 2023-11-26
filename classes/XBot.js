@@ -3,7 +3,7 @@ const pluginStealth = require('puppeteer-extra-plugin-stealth');
 // const dataDirPlugin = require("puppeteer-extra-plugin-user-data-dir");
 puppeteer.use(pluginStealth());
 const path = require("path");
-const {executablePath} = require('puppeteer')
+// const {executablePath} = require('puppeteer')
 // puppeteer.use(dataDirPlugin('/Users/aleleonian/Library/Application Support/Google/Chrome/Default'));
 
 // const puppeteerClassic = require("puppeteer");
@@ -25,7 +25,7 @@ let pupConfig = {
         '--no-sandbox',
         '--disable-setuid-sandbox'
     ],
-    executablePath: executablePath()
+    executablePath: '/usr/bin/google-chrome-stable',
 };
 
 if (process.env.EXECUTABLE_PATH) {
