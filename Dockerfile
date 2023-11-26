@@ -4,7 +4,8 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-ARG NODE_VERSION=21.1.0
+# ARG NODE_VERSION=21.1.0
+ARG NODE_VERSION=20.10.0
 
 # FROM node:${NODE_VERSION}-alpine
 FROM --platform=linux/amd64 node:${NODE_VERSION}-alpine
