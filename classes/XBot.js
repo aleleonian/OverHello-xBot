@@ -44,6 +44,10 @@ class XBot {
         this.queueTimer = false;
     }
 
+    setBusy(state){
+        this.isBusy = state;
+        return true;
+    }
     getTweet(userId) {
         return this.tweets[userId];
     }
@@ -184,8 +188,8 @@ class XBot {
             foundAndClicked = await this.findAndClick(process.env.TWEETER_POST_BUTTON);
             if (!foundAndClicked) return this.respond(false, "Could not find and click TWEETER_POST_BUTTON");
 
-            await this.wait(10000);
-
+            await this.wait(3000);
+            
             const tweetUrl = await this.getLastTweetUrl();
             this.tweets[userId] = tweetUrl;
             this.isBusy = false;

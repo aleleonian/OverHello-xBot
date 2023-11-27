@@ -6,13 +6,13 @@ const path = require("path");
 
 let statusCode = 200;
 
-router.get('/ping', function (req, res, next) {
+router.get('/ping', function (req, res) {
     let responseObject = {};
     responseObject.success = true
     res.status(200).json(responseObject);
 });
 
-router.get('/init', async function (req, res, next) {
+router.get('/init', async function (req, res) {
     let responseObject = {};
 
     if (!req.app.locals.myXBot) {
@@ -30,7 +30,7 @@ router.get('/init', async function (req, res, next) {
 });
 
 //TODO this is not working
-router.get('/close', function (req, res, next) {
+router.get('/close', function (req, res) {
     let responseObject = {};
     console.log("req.app.locals.myXBot->", req.app.locals.myXBot);
     if (!req.app.locals.myXBot) {
@@ -54,7 +54,7 @@ router.get('/close', function (req, res, next) {
         }
     }
 });
-router.get('/getboturl', async function (req, res, next) {
+router.get('/getboturl', async function (req, res) {
     let responseObject = {};
 
     if (!req.app.locals.myXBot) {
@@ -77,7 +77,7 @@ router.get('/getboturl', async function (req, res, next) {
         }
     }
 });
-router.get('/gettweet', async function (req, res, next) {
+router.get('/gettweet', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
@@ -109,7 +109,7 @@ router.get('/gettweet', async function (req, res, next) {
 
 });
 
-router.get('/goto', async function (req, res, next) {
+router.get('/goto', async function (req, res) {
 
     console.log("req.app.locals.myXBot->", req.app.locals.myXBot);
 
@@ -144,7 +144,39 @@ router.get('/goto', async function (req, res, next) {
     return res.status(statusCode).json(responseObject);
 
 });
-router.get('/isloggedin', async function (req, res, next) {
+router.get('/setbusy', async function (req, res) {
+
+    let responseObject = {};
+
+    if (req.app.locals.myXBot) {
+        if (req.query && req.query.state) {
+            const busy = JSON.parse(req.query.state);
+            const setBusy = await req.app.locals.myXBot.setBusy(busy);
+            if (setBusy) {
+                responseObject.message = "Bot isBusy = " + busy;
+                statusCode = 200;
+            }
+            else {
+                responseObject.message = "Bot did NOT set isBusy";
+                statusCode = 301;
+            }
+        }
+        else {
+            responseObject.success = false;
+            responseObject.message = "No STATE?"
+            statusCode = 301;
+        }
+    }
+    else {
+        responseObject.success = false;
+        responseObject.message = "Bot not initiated."
+        statusCode = 301;
+    }
+
+    return res.status(statusCode).json(responseObject);
+
+});
+router.get('/isloggedin', async function (req, res) {
 
     let responseObject = {};
 
@@ -170,7 +202,7 @@ router.get('/isloggedin', async function (req, res, next) {
 
 });
 
-router.get('/tweet', async function (req, res, next) {
+router.get('/tweet', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
@@ -204,7 +236,7 @@ router.get('/tweet', async function (req, res, next) {
     return res.status(statusCode).json(responseObject);
 
 });
-router.get('/verify', async function (req, res, next) {
+router.get('/verify', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
@@ -236,7 +268,7 @@ router.get('/verify', async function (req, res, next) {
     return res.status(statusCode).json(responseObject);
 
 });
-router.get('/lastposturl', async function (req, res, next) {
+router.get('/lastposturl', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
@@ -259,7 +291,7 @@ router.get('/lastposturl', async function (req, res, next) {
     return res.status(statusCode).json(responseObject);
 
 });
-router.get('/takepic', async function (req, res, next) {
+router.get('/takepic', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
@@ -281,7 +313,7 @@ router.get('/takepic', async function (req, res, next) {
 
 });
 
-router.get('/login', async function (req, res, next) {
+router.get('/login', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
@@ -308,7 +340,7 @@ router.get('/login', async function (req, res, next) {
     return res.status(statusCode).json(responseObject);
 
 });
-router.get('/logout', async function (req, res, next) {
+router.get('/logout', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
@@ -336,7 +368,7 @@ router.get('/logout', async function (req, res, next) {
 
 });
 
-router.post('/findtype', async function (req, res, next) {
+router.post('/findtype', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
@@ -369,7 +401,7 @@ router.post('/findtype', async function (req, res, next) {
     return res.status(statusCode).json(responseObject);
 
 });
-router.post('/findclick', async function (req, res, next) {
+router.post('/findclick', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
@@ -402,7 +434,7 @@ router.post('/findclick', async function (req, res, next) {
     return res.status(statusCode).json(responseObject);
 
 });
-router.post('/gettext', async function (req, res, next) {
+router.post('/gettext', async function (req, res) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
