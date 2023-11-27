@@ -54,7 +54,7 @@ router.get('/close', function (req, res, next) {
         }
     }
 });
-router.get('/geturl', async function (req, res, next) {
+router.get('/getboturl', async function (req, res, next) {
     let responseObject = {};
 
     if (!req.app.locals.myXBot) {
@@ -64,7 +64,7 @@ router.get('/geturl', async function (req, res, next) {
     }
     else {
         try {
-            const url = req.app.locals.myXBot.getUrl();
+            const url = req.app.locals.myXBot.getCurrentBotUrl();
             responseObject.success = true;
             responseObject.url = url;
             res.status(200).json(responseObject);
@@ -76,6 +76,37 @@ router.get('/geturl', async function (req, res, next) {
             res.status(301).json(responseObject);
         }
     }
+});
+router.get('/gettweet', async function (req, res, next) {
+    let responseObject = {};
+
+    if (req.app.locals.myXBot) {
+        if (req.query && req.query.userId) {
+            const userId = req.query.userId;
+            const tweetUrl = await req.app.locals.myXBot.getTweet(userId);
+            if (tweetUrl) {
+                responseObject.url = tweetUrl;
+                statusCode = 200;
+            }
+            else {
+                responseObject.message = "Did not find tweet url for userId " + userId; 
+                statusCode = 301;
+            }
+        }
+        else {
+            responseObject.success = false;
+            responseObject.message = "No USERID?"
+            statusCode = 301;
+        }
+    }
+    else {
+        responseObject.success = false;
+        responseObject.message = "Bot not initiated."
+        statusCode = 301;
+    }
+
+    return res.status(statusCode).json(responseObject);
+
 });
 
 router.get('/goto', async function (req, res, next) {
@@ -154,7 +185,7 @@ router.get('/tweet', async function (req, res, next) {
                 statusCode = 200;
             }
             else {
-                responseObject.message = "Bot did NOT tweet";
+                responseObject.message = "Bot did NOT tweet: " + hasTweeted.message;
                 statusCode = 301;
             }
         }
@@ -254,7 +285,7 @@ router.get('/login', async function (req, res, next) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
-        
+
         const hasLoggedIn = await req.app.locals.myXBot.loginToX();
 
         if (hasLoggedIn.success) {

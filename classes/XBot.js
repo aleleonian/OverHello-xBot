@@ -44,6 +44,10 @@ class XBot {
         this.queueTimer = false;
     }
 
+    getTweet(userId) {
+        return this.tweets[userId];
+    }
+
     async init() {
         const browser = await puppeteer.launch(pupConfig);
         let responseObject = {};
@@ -136,7 +140,7 @@ class XBot {
             return false;
         }
     }
-    getUrl() {
+    getCurrentBotUrl() {
         return this.page.url();
     }
     async getLastTweetUrl() {
@@ -146,7 +150,7 @@ class XBot {
         let foundAndClicked = await this.findAndClick(process.env.TWEETER_LAST_POST_IN_PROFILE);
         if (!foundAndClicked) return false;
 
-        return this.getUrl();
+        return this.getCurrentBotUrl();
     }
 
     async tweet(userId, text) {
