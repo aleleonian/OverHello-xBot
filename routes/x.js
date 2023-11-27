@@ -6,6 +6,12 @@ const path = require("path");
 
 let statusCode = 200;
 
+router.get('/ping', function (req, res, next) {
+    let responseObject = {};
+    responseObject.success = true
+    res.status(200).json(responseObject);
+});
+
 router.get('/init', async function (req, res, next) {
     let responseObject = {};
 
@@ -107,6 +113,31 @@ router.get('/goto', async function (req, res, next) {
     return res.status(statusCode).json(responseObject);
 
 });
+router.get('/isloggedin', async function (req, res, next) {
+
+    let responseObject = {};
+
+    if (req.app.locals.myXBot) {
+        const isLoggedIn = req.app.locals.myXBot.isLoggedIn;
+        if (isLoggedIn) {
+            responseObject.message = "Bot is logged in!";
+            responseObject.success = true;
+            statusCode = 200;
+        }
+        else {
+            responseObject.message = "Bot NOT logged in";
+            responseObject.success = false;
+            statusCode = 301;
+        }
+    }
+    else {
+        responseObject.success = false;
+        responseObject.message = "Bot not initiated."
+        statusCode = 301;
+    }
+    return res.status(statusCode).json(responseObject);
+
+});
 
 router.get('/tweet', async function (req, res, next) {
     let responseObject = {};
@@ -116,8 +147,9 @@ router.get('/tweet', async function (req, res, next) {
             const text = req.query.text;
             const hasTweeted = await req.app.locals.myXBot.tweet(text);
             responseObject.success = hasTweeted.success;
-            if (hasTweeted) {
+            if (hasTweeted.success) {
                 responseObject.message = "Bot tweeted!";
+                responseObject.url = hasTweeted.data;
                 statusCode = 200;
             }
             else {

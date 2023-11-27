@@ -37,7 +37,8 @@ class XBot {
     constructor() {
         this.browser;
         this.page;
-        this.busy = false;
+        this.tweets = {};
+        this.isLoggedIn = false;
     }
 
     async init() {
@@ -145,25 +146,30 @@ class XBot {
         return this.getUrl();
     }
 
-    async tweet(text) {
-        if (!this.busy) {
-            let hasVisited = await this.goto("https://www.x.com");
-            if (!hasVisited) return false;
+    async tweet(text, userId) {
 
-            // TODO: if the TWEETER_NEW_TWEET_INPUT is not found it's because Twitter
-            // suspects i'm a bot and wants my email
-            let foundAndClicked = await this.findAndClick(process.env.TWEETER_NEW_TWEET_INPUT);
-            if (!foundAndClicked) return false;
+        let hasVisited = await this.goto("https://www.x.com");
+        if (!hasVisited) return this.respond(false, "Could not visit x.com");
 
-            let foundAndTyped = await this.findAndType(process.env.TWEETER_NEW_TWEET_INPUT, text);
-            if (!foundAndTyped) return false;
+        // TODO: if the TWEETER_NEW_TWEET_INPUT is not found it's because Twitter
+        // suspects i'm a bot and wants my email
+        let foundAndClicked = await this.findAndClick(process.env.TWEETER_NEW_TWEET_INPUT);
+        if (!foundAndClicked) return this.respond(false, "Could not find TWEETER_NEW_TWEET_INPUT");
 
-            foundAndClicked = await this.findAndClick(process.env.TWEETER_POST_BUTTON);
-            return foundAndClicked;
+        let foundAndTyped = await this.findAndType(process.env.TWEETER_NEW_TWEET_INPUT, text);
+        if (!foundAndTyped) return this.respond(false, "Could not find and type WEETER_NEW_TWEET_INPUT");
+
+        foundAndClicked = await this.findAndClick(process.env.TWEETER_POST_BUTTON);
+        if (!foundAndClicked) return this.respond(false, "Could not find and click TWEETER_POST_BUTTON");
+
+        const tweetUrl = await this.getLastTweetUrl();
+        this.tweets[userId] = tweetUrl;
+
+        if (tweetUrl) {
+            return this.respond(true, "xBot tweeted!", tweetUrl);
         }
         else {
-            console.log("xBot is busy, will queue tweet job.");
-            return false;
+            return this.respond(true, "xBot tweeted but could not get tweet's url");
         }
     }
 
@@ -197,19 +203,17 @@ class XBot {
                 return response;
             }
             else {
-                console.log("Did NOT find SUSPICION_TEXT!");
+                console.log("Did NOT find VERIFICATION_TEXT!");
                 let response = {}
                 response.success = false;
                 return response;
             }
         }
         catch (error) {
-            console.log("twitterSuspects() exception! -> Did NOT find SUSPICION_TEXT!")
+            console.log("twitterSuspects() exception! -> Did NOT find VERIFICATION_TEXT!")
             return false;
         }
     }
-    // TODO: i gotta learn how to circumvent the email request when Twitter suspects i'm a bot.
-    // check Log in to X _ X.html in noupload/
     // TODO: set less time for the timeout for finding elements
     // try catch each and every interaction attempt
     // detect wheter i'm being requested my email
@@ -258,7 +262,7 @@ class XBot {
         console.log("Found and typed TWEETER_PASSWORD_INPUT");
 
         await this.page.keyboard.press('Enter');
-
+        this.isLoggedIn = true;
         return true;
     }
 
@@ -299,6 +303,15 @@ class XBot {
         await this.page.keyboard.press('Enter');
 
         return true;
+    }
+    respond(success, message, data) {
+        let responseObj = {};
+        responseObj.success = success;
+        responseObj.message = message;
+        if (data) {
+            responseObj.data = data;
+        }
+        return responseObj;
     }
 }
 module.exports = XBot;
