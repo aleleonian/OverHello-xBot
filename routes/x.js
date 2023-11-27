@@ -115,7 +115,7 @@ router.get('/tweet', async function (req, res, next) {
         if (req.query && req.query.text) {
             const text = req.query.text;
             const hasTweeted = await req.app.locals.myXBot.tweet(text);
-            responseObject.success = hasTweeted;
+            responseObject.success = hasTweeted.success;
             if (hasTweeted) {
                 responseObject.message = "Bot tweeted!";
                 statusCode = 200;

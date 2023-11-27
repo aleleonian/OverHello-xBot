@@ -36,7 +36,8 @@ class XBot {
 
     constructor() {
         this.browser;
-        this.page
+        this.page;
+        this.busy = false;
     }
 
     async init() {
@@ -80,7 +81,7 @@ class XBot {
             await this.page.screenshot({ path: filePath });
             return true;
         }
-        catch (error){
+        catch (error) {
             console.log("takePic() error->", error);
             return false;
         }
@@ -145,19 +146,25 @@ class XBot {
     }
 
     async tweet(text) {
-        let hasVisited = await this.goto("https://www.x.com");
-        if (!hasVisited) return false;
+        if (!this.busy) {
+            let hasVisited = await this.goto("https://www.x.com");
+            if (!hasVisited) return false;
 
-        // TODO: if the TWEETER_NEW_TWEET_INPUT is not found it's because Twitter
-        // suspects i'm a bot and wants my email
-        let foundAndClicked = await this.findAndClick(process.env.TWEETER_NEW_TWEET_INPUT);
-        if (!foundAndClicked) return false;
+            // TODO: if the TWEETER_NEW_TWEET_INPUT is not found it's because Twitter
+            // suspects i'm a bot and wants my email
+            let foundAndClicked = await this.findAndClick(process.env.TWEETER_NEW_TWEET_INPUT);
+            if (!foundAndClicked) return false;
 
-        let foundAndTyped = await this.findAndType(process.env.TWEETER_NEW_TWEET_INPUT, text);
-        if (!foundAndTyped) return false;
+            let foundAndTyped = await this.findAndType(process.env.TWEETER_NEW_TWEET_INPUT, text);
+            if (!foundAndTyped) return false;
 
-        foundAndClicked = await this.findAndClick(process.env.TWEETER_POST_BUTTON);
-        return foundAndClicked;
+            foundAndClicked = await this.findAndClick(process.env.TWEETER_POST_BUTTON);
+            return foundAndClicked;
+        }
+        else {
+            console.log("xBot is busy, will queue tweet job.");
+            return false;
+        }
     }
 
     async twitterSuspects() {

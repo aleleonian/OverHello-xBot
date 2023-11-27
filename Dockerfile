@@ -1,5 +1,4 @@
 # syntax=docker/dockerfile:1
-
 # Comments are provided throughout this file to help you get started.
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
@@ -7,14 +6,10 @@
 ARG NODE_VERSION=21.1.0
 # ARG NODE_VERSION=20.10.0
 
-# this one is good for running it locally
-# FROM node:${NODE_VERSION}-alpine
-# this one is good for online (wtf)
 FROM --platform=linux/amd64 node:${NODE_VERSION}-alpine
-# FROM node:${NODE_VERSION}-alpine
+
 # Use production node environment by default.
 ENV NODE_ENV production
-
 # We don't need the standalone Chromium
 # ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 

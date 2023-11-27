@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "rm -f .puppeteerrc.cjs; nodemon ./bin/www",
-    "build": "cp .puppeteerrc.cjs.dist .puppeteerrc.cjs;"
+    "dev":   "sed -i '' 's|FROM --platform=linux/amd64 node:${NODE_VERSION}-alpine|FROM node:${NODE_VERSION}-alpine|' Dockerfile && sed -i '' 's|**/.env|<!-- **/.env -->|' .dockerignore",
+    "build": "sed -i '' 's|FROM node:${NODE_VERSION}-alpine|FROM --platform=linux/amd64 node:${NODE_VERSION}-alpine|' Dockerfile && sed -i '' 's|<!-- \\*\\*/\\.env -->|**/.env|' .dockerignore"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
