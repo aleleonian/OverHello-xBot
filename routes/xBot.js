@@ -143,9 +143,10 @@ router.get('/tweet', async function (req, res, next) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
-        if (req.query && req.query.text) {
+        if (req.query && req.query.text && req.query.userId) {
             const text = req.query.text;
-            const hasTweeted = await req.app.locals.myXBot.tweet(text);
+            const userId = req.query.userId;
+            const hasTweeted = await req.app.locals.myXBot.tweet(userId, text);
             responseObject.success = hasTweeted.success;
             if (hasTweeted.success) {
                 responseObject.message = "Bot tweeted!";
@@ -253,50 +254,44 @@ router.get('/login', async function (req, res, next) {
     let responseObject = {};
 
     if (req.app.locals.myXBot) {
+        
         const hasLoggedIn = await req.app.locals.myXBot.loginToX();
-        responseObject.success = hasLoggedIn;
-        if (hasLoggedIn) {
-            console.log("Twitter Bot has logged in, we now will try to detect suspicion.");
-            let confirmedSuspicion = await req.app.locals.myXBot.twitterSuspects();
-            if (confirmedSuspicion) {
-                console.log("Twitter suspects, will try to convince them.");
-                let emailWasInput = await req.app.locals.myXBot.inputEmail();
-                if (emailWasInput) {
-                    console.log("We succeeded convincing twitter. We're in.");
-                    responseObject.message = "Bot logged in!";
-                    statusCode = 200;
-                }
-                else {
-                    console.log("We did not convince Elon :(");
-                    responseObject.message = "Bot did NOT log in";
-                    statusCode = 301;
-                }
-            }
-            else {
-                console.log("We will now try to see if Twitter wants verification from us.")
-                let confirmedVerification = await req.app.locals.myXBot.twitterWantsVerification();
-                if (confirmedVerification.success) {
-                    console.log("Twitter wants verification from us!")
-                    // now we must check the code that was sent to us
-                    // (or read the email automatically)
-                    // and send it to the browser.
-                    // The thing is i don't know how to locate that input field yet.
-                    const tookPic = await req.app.locals.myXBot.takePic();
-                    // const filePath = path.resolve(__dirname, "page.html");
-                    // fs.writeFileSync(filePath, confirmedVerification.pageContent);
-                    responseObject.message = "Bot did NOT log in / Twitter wants verification code.";
-                    statusCode = 301;
-                    // res.download(filePath);
-                }
-                else {
-                    console.log("Apparently Twitter does not suspect, so we're logged in?");
-                    responseObject.message = "Bot logged in!";
-                    statusCode = 200;
-                }
-            }
+
+        if (hasLoggedIn.success) {
+            responseObject.message = hasLoggedIn.message;
+            responseObject.success = true;
+            statusCode = 200;
         }
         else {
-            responseObject.message = "Bot did NOT log in";
+            responseObject.message = hasLoggedIn.message;
+            responseObject.success = false;
+            statusCode = 301;
+        }
+    }
+    else {
+        responseObject.success = false;
+        responseObject.message = "Bot not initiated."
+        statusCode = 301;
+    }
+
+    return res.status(statusCode).json(responseObject);
+
+});
+router.get('/logout', async function (req, res, next) {
+    let responseObject = {};
+
+    if (req.app.locals.myXBot) {
+
+        const hasLoggedOut = await req.app.locals.myXBot.logOut();
+
+        if (hasLoggedOut.succes) {
+            responseObject.message = hasLoggedOut.message;
+            responseObject.success = true;
+            statusCode = 200;
+        }
+        else {
+            responseObject.message = hasLoggedOut.message;
+            responseObject.success = false;
             statusCode = 301;
         }
     }
