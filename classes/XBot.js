@@ -44,7 +44,7 @@ class XBot {
         this.queueTimer = false;
     }
 
-    setBusy(state){
+    setBusy(state) {
         this.isBusy = state;
         return true;
     }
@@ -176,30 +176,23 @@ class XBot {
             this.isBusy = true;
             let hasVisited = await this.goto("https://www.x.com");
             if (!hasVisited) return this.respond(false, "Could not visit x.com");
-
+            console.log("tweet() visited x.com");
             // TODO: if the TWEETER_NEW_TWEET_INPUT is not found it's because Twitter
             // suspects i'm a bot and wants my email
             let foundAndClicked = await this.findAndClick(process.env.TWEETER_NEW_TWEET_INPUT);
             if (!foundAndClicked) return this.respond(false, "Could not find TWEETER_NEW_TWEET_INPUT");
+            console.log("tweet() found and clicked TWEETER_NEW_TWEET_INPUT");
 
             let foundAndTyped = await this.findAndType(process.env.TWEETER_NEW_TWEET_INPUT, text);
-            if (!foundAndTyped) return this.respond(false, "Could not find and type WEETER_NEW_TWEET_INPUT");
+            if (!foundAndTyped) return this.respond(false, "Could not find and type TWEETER_NEW_TWEET_INPUT");
+            console.log("tweet() found and typed TWEETER_NEW_TWEET_INPUT");
 
             foundAndClicked = await this.findAndClick(process.env.TWEETER_POST_BUTTON);
             if (!foundAndClicked) return this.respond(false, "Could not find and click TWEETER_POST_BUTTON");
-
-            await this.wait(8000);
-
-            const tweetUrl = await this.getLastTweetUrl();
-            this.tweets[userId] = tweetUrl;
+            console.log("tweet() found and clicked TWEETER_POST_BUTTON");
             this.isBusy = false;
+            return this.respond(true, "xBot tweeted!");
 
-            if (tweetUrl) {
-                return this.respond(true, "xBot tweeted!", tweetUrl);
-            }
-            else {
-                return this.respond(true, "xBot tweeted but could not get tweet's url");
-            }
         }
         else {
             console.log('xBot is busy, queuing task.');
@@ -262,11 +255,13 @@ class XBot {
         return true;
     }
     async loginToX() {
+        this.isBusy = true;
 
         if (!this.isLoggedIn) {
             let hasVisited = await this.goto("https://www.x.com/login");
             if (!hasVisited) {
                 console.log("Can't visit https://www.x.com");
+                this.isBusy = false;
                 return this.respond(false, "Could not visit x.com");
             }
             console.log("We're at https://www.x.com");
@@ -274,6 +269,7 @@ class XBot {
             let foundAndClicked = await this.findAndClick(process.env.TWEETER_USERNAME_INPUT);
             if (!foundAndClicked) {
                 console.log("Can't find TWEETER_USERNAME_INPUT");
+                this.isBusy = false;
                 return this.respond(false, "Can't find TWEETER_USERNAME_INPUT");
             }
             console.log("Found and clicked TWEETER_USERNAME_INPUT");
@@ -281,6 +277,7 @@ class XBot {
             let foundAndTyped = await this.findAndType(process.env.TWEETER_USERNAME_INPUT, process.env.TWEETER_BOT_USERNAME);
             if (!foundAndTyped) {
                 console.log("Can't find and type TWEETER_USERNAME_INPUT");
+                this.isBusy = false;
                 return this.respond(false, "Can't find and type TWEETER_USERNAME_INPUT");
             }
             console.log("Found and typed TWEETER_USERNAME_INPUT");
@@ -288,6 +285,7 @@ class XBot {
             foundAndClicked = await this.findAndClick(process.env.TWEETER_USERNAME_SUBMIT_BUTTON);
             if (!foundAndClicked) {
                 console.log("Can't find and click TWEETER_USERNAME_SUBMIT_BUTTON");
+                this.isBusy = false;
                 return this.respond(false, "Can't find and click TWEETER_USERNAME_SUBMIT_BUTTON");
             }
             console.log("Found and clicked TWEETER_USERNAME_SUBMIT_BUTTON");
@@ -295,6 +293,7 @@ class XBot {
             foundAndClicked = await this.findAndClick(process.env.TWEETER_PASSWORD_INPUT);
             if (!foundAndClicked) {
                 console.log("Can't find and click TWEETER_PASSWORD_INPUT");
+                this.isBusy = false;
                 return this.respond(false, "Can't find and click TWEETER_PASSWORD_INPUT");
             }
             console.log("Found and clicked TWEETER_USERNAME_INPUT");
@@ -302,6 +301,7 @@ class XBot {
             foundAndTyped = await this.findAndType(process.env.TWEETER_PASSWORD_INPUT, process.env.TWEETER_BOT_PASSWORD);
             if (!foundAndTyped) {
                 console.log("Can't find and type TWEETER_PASSWORD_INPUT");
+                this.isBusy = false;
                 return this.respond(false, "Can't find and type TWEETER_PASSWORD_INPUT");
             }
             console.log("Found and typed TWEETER_PASSWORD_INPUT");
@@ -317,10 +317,12 @@ class XBot {
                 let emailWasInput = await this.inputEmail();
                 if (emailWasInput) {
                     console.log("We succeeded convincing twitter. We're in.");
+                    this.isBusy = false;
                     return this.respond(true, "xBot is logged in, we convinced Elon!");
                 }
                 else {
                     console.log("We did not convince Elon :(");
+                    this.isBusy = false;
                     return this.respond(false, "xBot is not logged in :(");
                 }
             }
@@ -333,18 +335,21 @@ class XBot {
                     // (or read the email automatically)
                     // and send it to the browser.
                     // The thing is i don't know how to locate that input field yet.
+                    this.isBusy = false;
                     return this.respond(false, "Bot did NOT log in / Twitter wants verification code.")
                     // res.download(filePath);
                 }
                 else {
                     console.log("Apparently Twitter does not suspect, so we're logged in!");
                     this.isLoggedIn = true;
+                    this.isBusy = false;
                     return this.respond(true, "xBot is logged in!")
                 }
             }
         }
         else {
             console.log("xBot is already logged in!");
+            this.isBusy = false;
             return this.respond(false, "xBot is already logged in!");
         }
     }
