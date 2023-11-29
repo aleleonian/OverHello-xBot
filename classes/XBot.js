@@ -190,9 +190,12 @@ class XBot {
             foundAndClicked = await this.findAndClick(process.env.TWEETER_POST_BUTTON);
             if (!foundAndClicked) return this.respond(false, "Could not find and click TWEETER_POST_BUTTON");
             console.log("tweet() found and clicked TWEETER_POST_BUTTON");
-            this.isBusy = false;
-            return this.respond(true, "xBot tweeted!");
 
+            //TODO: scan the page for "Whoops! you posted that already"
+            
+            this.isBusy = false;
+            this.tweets[userId] = text;
+            return this.respond(true, "xBot tweeted!");
         }
         else {
             console.log('xBot is busy, queuing task.');
