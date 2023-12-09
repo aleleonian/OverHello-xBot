@@ -5,6 +5,8 @@
  */
 require("dotenv").config();
 
+checkEnvVars();
+
 var app = require('../app');
 var debug = require('debug')('bookmarks:server');
 var http = require('http');
@@ -88,4 +90,41 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   console.log('Listening on ' + bind);
+}
+
+function checkEnvVars() {
+  let ENV_VARS = [
+    { var: process.env.TWITTER_NEW_TWEET_INPUT, name: 'TWITTER_NEW_TWEET_INPUT' },
+    { var: process.env.TWITTER_POST_BUTTON, name: 'TWITTER_POST_BUTTON' },
+    { var: process.env.TWITTER_LAST_POST_IN_PROFILE, name: 'TWITTER_LAST_POST_IN_PROFILE' },
+    { var: process.env.TWITTER_PROFILE_URL, name: 'TWITTER_PROFILE_URL' },
+    { var: process.env.TWITTER_USERNAME_INPUT, name: 'TWITTER_USERNAME_INPUT' },
+    { var: process.env.TWITTER_EMAIL_INPUT, name: 'TWITTER_EMAIL_INPUT' },
+    { var: process.env.TWITTER_VERIFICATION_CODE_INPUT, name: 'TWITTER_VERIFICATION_CODE_INPUT' },
+    { var: process.env.TWITTER_USERNAME_SUBMIT_BUTTON, name: 'TWITTER_USERNAME_SUBMIT_BUTTON' },
+    { var: process.env.TWITTER_BOT_USERNAME, name: 'TWITTER_BOT_USERNAME' },
+    { var: process.env.TWITTER_BOT_PASSWORD, name: 'TWITTER_BOT_PASSWORD' },
+    { var: process.env.TWITTER_BOT_EMAIL, name: 'TWITTER_BOT_EMAIL' },
+    { var: process.env.TWITTER_PASSWORD_INPUT, name: 'TWITTER_PASSWORD_INPUT' },
+    { var: process.env.XBOT_HEADLESS, name: 'XBOT_HEADLESS' },
+    { var: process.env.SUSPICION_TEXT, name: 'SUSPICION_TEXT' },
+    { var: process.env.VERIFICATION_TEXT, name: 'VERIFICATION_TEXT' },
+  ]
+
+  let allTheEnvVars = "";
+  let problems = false;
+
+  ENV_VARS.forEach(envObject => {
+    allTheEnvVars += envObject.name + ", ";
+    if (!envObject.var) {
+      problems = true;
+      console.log(`${envObject.name} env var is missing!`);
+    }
+  });
+  allTheEnvVars = allTheEnvVars.substring(0, allTheEnvVars.lastIndexOf(","));
+  if (problems) {
+    console.log("ABORTING!");
+    console.log("You need to set the following enviroment variables: " + allTheEnvVars);
+    process.exit();
+  }
 }
